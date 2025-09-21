@@ -3,7 +3,12 @@ import os
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score, mean_squared_error
-from .data_utils import load_data, split_data, scale_data
+
+# Handle both relative and absolute imports
+try:
+    from .data_utils import load_data, split_data, scale_data
+except ImportError:
+    from data_utils import load_data, split_data, scale_data
 
 def train():
     """Train a Random Forest model on the diabetes dataset."""

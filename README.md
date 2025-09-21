@@ -99,7 +99,7 @@ diabetes-streamlit-app/
 
 4. **Train the model**
    ```bash
-   python src/train_model.py
+   python -m src.train_model
    ```
 
 5. **Run the Streamlit app**
@@ -107,7 +107,19 @@ diabetes-streamlit-app/
    streamlit run app/app.py
    ```
 
-6. **Open your browser** and navigate to `http://localhost:8501`
+6. **Access the app**
+   Open your browser and go to `http://localhost:8501`
+
+### Testing the Setup
+
+Run the comprehensive test script to verify everything works:
+
+```bash
+./test_new_developer.sh
+```
+
+This script simulates a fresh environment and tests all components.
+
 
 ### Docker Deployment
 

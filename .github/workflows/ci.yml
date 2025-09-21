@@ -36,7 +36,7 @@ jobs:
     
     - name: Test model training
       run: |
-        python src/train_model.py
+        python -m src.train_model
         python -c "import pickle; pickle.load(open('app/model.pkl', 'rb')); pickle.load(open('app/scaler.pkl', 'rb'))"
     
     - name: Test Streamlit app import
