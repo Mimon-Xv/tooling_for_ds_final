@@ -17,6 +17,8 @@ from src.charts import (
     feature_importance_chart,
     residual_plot
 )
+from src.feature_config import get_realistic_range, get_feature_description, REALISTIC_RANGES
+from src.feature_converter import realistic_to_normalized, normalized_to_realistic, get_realistic_default
 
 # Page configuration
 st.set_page_config(
@@ -45,30 +47,63 @@ X, y = load_cached_data()
 
 # Sidebar for user input
 st.sidebar.header("🎛️ Input Features")
-st.sidebar.markdown("Adjust the sliders to set feature values for prediction:")
+st.sidebar.markdown("Adjust the sliders to set realistic medical values for prediction:")
 
-# Get feature ranges for sliders
-feature_ranges = {}
-for feature in X.columns:
-    min_val = float(X[feature].min())
-    max_val = float(X[feature].max())
-    mean_val = float(X[feature].mean())
-    feature_ranges[feature] = (min_val, max_val, mean_val)
+# Add explanation about data preprocessing
+with st.sidebar.expander("ℹ️ About the Data", expanded=False):
+    st.markdown("""
+    **Data Preprocessing Note:**
+    
+    The diabetes dataset from scikit-learn has been pre-processed:
+    - Features are **mean-centered** (average = 0)
+    - Values are **normalized** to have unit variance
+    - This is why you see values between -1 and 1
+    
+    The sliders below show **realistic medical ranges** that are automatically converted to the normalized format for prediction.
+    """)
 
-# Create sliders for each feature
+# Create sliders for each feature with realistic ranges
 user_input = []
+realistic_values = []
+
 for feature in X.columns:
-    min_val, max_val, mean_val = feature_ranges[feature]
-    value = st.sidebar.slider(
-        f"{feature}",
+    # Get realistic configuration
+    realistic_config = get_realistic_range(feature)
+    feature_desc = get_feature_description(feature)
+    
+    # Get realistic default value
+    default_realistic = get_realistic_default(feature)
+    
+    # Create slider with realistic range
+    min_val = float(realistic_config['min'])
+    max_val = float(realistic_config['max'])
+    step_val = float((max_val - min_val) / 100)
+    
+    realistic_value = st.sidebar.slider(
+        f"{feature_desc} ({realistic_config['unit']})",
         min_val,
         max_val,
-        mean_val,
-        step=(max_val - min_val) / 100,
-        format="%.3f",
-        help=f"Range: [{min_val:.3f}, {max_val:.3f}]"
+        float(default_realistic),
+        step=step_val,
+        format="%.1f",
+        help=f"{realistic_config['description']} - Range: {min_val}-{max_val} {realistic_config['unit']}"
     )
-    user_input.append(value)
+    
+    # Convert to normalized value for model
+    normalized_value = realistic_to_normalized(realistic_value, feature)
+    user_input.append(normalized_value)
+    realistic_values.append(realistic_value)
+    
+    # Show both values
+    st.sidebar.caption(f"Normalized: {normalized_value:.3f}")
+
+# Show current realistic values summary
+st.sidebar.markdown("---")
+st.sidebar.markdown("**Current Values:**")
+for i, feature in enumerate(X.columns):
+    feature_desc = get_feature_description(feature)
+    realistic_config = get_realistic_range(feature)
+    st.sidebar.caption(f"{feature_desc}: {realistic_values[i]:.1f} {realistic_config['unit']}")
 
 # Load model and scaler
 @st.cache_resource
