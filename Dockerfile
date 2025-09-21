@@ -23,7 +23,7 @@ COPY . .
 RUN mkdir -p app
 
 # Train the model (this will create model.pkl and scaler.pkl)
-RUN python src/train_model.py
+RUN python -m src.train_model
 
 # Expose Streamlit's default port
 EXPOSE 8501
